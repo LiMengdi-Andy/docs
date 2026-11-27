@@ -36,7 +36,7 @@ OpenAN version numbering uses year and month as the version number, allowing use
 
 # Version Introduction
 
-This version is the first release of OpenAN, with modules including registry-center, orchestration-center, A2A-T SDK (a2a-t-sdk-python, a2a-t-sdk-java).
+This version is the first release of OpenAN, with modules including registry-center, orchestration-center, A2A-T SDK (a2a-t-sdk-python, a2a-t-sdk-java), and knowledge-service.
 
 - The main features of registry-center are shown in [Table 1](#table_registry_features). For detailed information on feature descriptions, please refer to [Registry-center User Guide](https://github.com/project-openan/registry-center/blob/main/docs/en/Registry%20Center%20User%20Guide.md).
   
@@ -45,6 +45,8 @@ This version is the first release of OpenAN, with modules including registry-cen
 - The main features of a2a-t-sdk-python are shown in [Table 3](#table_a2at_sdk_features). For detailed information on feature descriptions, please refer to [a2a-t-sdk-python User Guide](https://github.com/project-openan/a2a-t-sdk-python/blob/main/docs/en/user_guide.md).
   
 - The main features of a2a-t-sdk-java are shown in [Table 4](#table_a2at_java_features). For detailed information on feature descriptions, please refer to [a2a-t-sdk-java User Guide](https://github.com/project-openan/a2a-t-sdk-java/blob/main/docs/en/user_guide.md).
+
+- The main features of knowledge-service are shown in [Table 5](#table_knowledge_service_features). For detailed information on feature descriptions, please refer to [Knowledge Service User Guide](https://github.com/project-openan/knowledge-service/blob/main/docs/en/User_Guide.md).
 
 **Table 1** Registry-center Feature List<a id="table_registry_features" href="#"></a>
 <table border="0">
@@ -502,6 +504,106 @@ This version is the first release of OpenAN, with modules including registry-cen
     <tr>
       <td>Builder Construction Pattern</td>
       <td>Both client <code>A2ATClient</code> and server <code>A2ATServer</code> support custom assembly of each component through Builder pattern (<code>DefaultA2ATClientBuilder</code>, <code>DefaultA2ATServerBuilder</code>), facilitating integrators to replace implementations as needed.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Table 5** knowledge-service Feature List<a id="table_knowledge_service_features" href="#"></a>
+<table border="0">
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Feature</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="5">Document Knowledge Base</td>
+      <td>Knowledge Base Management</td>
+      <td>Creates and manages document knowledge bases and directories, and lists, moves, and deletes documents.</td>
+    </tr>
+    <tr>
+      <td>Document Import</td>
+      <td>Imports Markdown, TXT, DOCX, and other text-bearing files into a knowledge base and processes them asynchronously.</td>
+    </tr>
+    <tr>
+      <td>Ingestion Pipeline</td>
+      <td>Parses, splits, vectorizes, and indexes imported documents. A failed document can be reprocessed without re-uploading the source file.</td>
+    </tr>
+    <tr>
+      <td>Chunk Inspection</td>
+      <td>Views the chunks produced by document processing, including the chunk count and chunk content.</td>
+    </tr>
+    <tr>
+      <td>Source File Download</td>
+      <td>Downloads the original uploaded file of a document.</td>
+    </tr>
+    <tr>
+      <td rowspan="4">Graph Knowledge Base</td>
+      <td>Ontology Template Management</td>
+      <td>Creates, imports, updates, and deletes ontology templates (graph schemas) used for graph extraction.</td>
+    </tr>
+    <tr>
+      <td>Graph Extraction</td>
+      <td>Extracts entities and relations from documents as an asynchronous task based on an ontology template.</td>
+    </tr>
+    <tr>
+      <td>Graph Import and Export</td>
+      <td>Imports an existing graph from a file and exports a graph for archiving or migration.</td>
+    </tr>
+    <tr>
+      <td>Graph Query and Editing</td>
+      <td>Queries a graph knowledge base, visualizes the result, and creates, updates, and deletes entities and relations.</td>
+    </tr>
+    <tr>
+      <td rowspan="3">Retrieval Orchestration</td>
+      <td>Canvas Workflow Design</td>
+      <td>Composes keyword, vector, and graph retrieval nodes into a retrieval workflow on a canvas.</td>
+    </tr>
+    <tr>
+      <td>Workflow Validation</td>
+      <td>Validates the canvas configuration before publication and reports configuration errors.</td>
+    </tr>
+    <tr>
+      <td>Draft and Publication</td>
+      <td>Saves the canvas as a draft. Only a published workflow can be selected for question answering; republish after changing a published workflow.</td>
+    </tr>
+    <tr>
+      <td rowspan="2">Question Answering</td>
+      <td>Chat Test</td>
+      <td>Asks questions against a published workflow and streams the answer to the page.</td>
+    </tr>
+    <tr>
+      <td>Evidence and Citations</td>
+      <td>Returns the retrieval evidence and citations of each answer, and records query traces for later inspection.</td>
+    </tr>
+    <tr>
+      <td rowspan="2">Model Management</td>
+      <td>Model Registration</td>
+      <td>Registers LLM, Embedding, and Reranker endpoints with base URL, model identifier, vector dimension, and credentials; credentials are encrypted at rest.</td>
+    </tr>
+    <tr>
+      <td>Connectivity Testing</td>
+      <td>Tests an unsaved or saved model configuration against the provider endpoint.</td>
+    </tr>
+    <tr>
+      <td rowspan="2">Retrieval Interfaces</td>
+      <td>Document Retrieval API</td>
+      <td>Provides REST retrieval over document knowledge bases in vector or keyword mode.</td>
+    </tr>
+    <tr>
+      <td>Graph Retrieval API</td>
+      <td>Provides public graph retrieval that finds seed nodes by vector similarity and propagates through relations by depth.</td>
+    </tr>
+    <tr>
+      <td rowspan="2">Operations</td>
+      <td>Query Traces</td>
+      <td>Lists and inspects query traces with workflow, conversation, and trace filters, and aggregates trace statistics by time bucket.</td>
+    </tr>
+    <tr>
+      <td>Task Management</td>
+      <td>Lists asynchronous tasks, and cancels, retries, or updates a task.</td>
     </tr>
   </tbody>
 </table>
@@ -1003,6 +1105,89 @@ The initial release of a2a-t-sdk-java only provides source code, without binary 
 > - a2a-t-sdk-java is the Java reference implementation SDK for the A2A-T protocol standard. Task prompt format and negotiation process follow the above protocol standards.
 > - The A2A-T protocol is the telecom domain extension of the A2A (Agent-to-Agent) protocol, standardized and published by TM Forum.
 > - Negotiation context transmission follows the A2A project telecom extension URI convention, carried in Task.metadata through the `https://projects.tmforum.org/a2aproject/telecommunication/extensions/DATA-NEGOTIATION-T/v1` key.
+
+## Knowledge-service
+
+### Deliverables
+
+The initial release of knowledge-service provides source code and Docker Compose deployment assets, without binary installation packages. Source code can be obtained from the [OpenAN community knowledge-service repository](https://github.com/project-openan/knowledge-service).
+
+**Table 1** knowledge-service v0.2.0 Deliverable List
+
+<table border="0">
+  <thead>
+    <tr>
+      <th>Delivery Form</th>
+      <th>Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Source Code</td>
+      <td>knowledge-service source code</td>
+      <td>Complete source code of the Knowledge Studio web application, the FastAPI backend, and the deployment assets</td>
+    </tr>
+    <tr>
+      <td>Deployment Assets</td>
+      <td>deploy/docker-compose.yml</td>
+      <td>Compose definition of the four services (postgresql, opensearch, backend, web) and the data volumes</td>
+    </tr>
+  </tbody>
+</table>
+
+> **Note:**
+>
+> - The initial release only delivers source code and deployment assets; deliverables do not include prebuilt images.
+> - Images are built from backend/Dockerfile and the frontend build during `docker compose up --build`.
+> - Model endpoints (LLM, Embedding, Reranker) are provided by the deployment; the service does not bundle a model.
+
+### Operating System Version Compatibility
+
+**Table 2** knowledge-service v0.2.0 Supported Scenarios
+
+| Operating System | Version | Architecture | Applicability |
+|---------|------|------|----------|
+| openEuler | 22.03 LTS SP3 | x86_64, ARM64 | Recommended for production |
+| Ubuntu | 22.04 | x86_64, ARM64 | Available for production |
+
+> **Note:**
+>
+> - knowledge-service runs as Docker Compose services and requires Docker Engine with Docker Compose v2 supporting `up --wait`.
+> - Only single-host deployment is supported. On Linux, OpenSearch requires `vm.max_map_count` of at least `262144`.
+> - Default host ports are `8080` (web) and `8091` (backend).
+
+### Runtime Environment Version Compatibility
+
+**Table 3** knowledge-service v0.2.0 Runtime Environment Requirements
+
+| Software | Version Requirement | Purpose |
+|-----|---------|------|
+| Python | 3.11 | Backend runtime (inside the backend container) |
+| Node.js | 22 | Frontend build |
+| PostgreSQL with pgvector | 16 with pgvector 0.8.7 | Business data and vector storage |
+| OpenSearch | 2.19.6 with IK analyzer | Keyword retrieval index |
+
+> **Note:**
+>
+> - The Compose deployment provides PostgreSQL and OpenSearch as containers (`pgvector/pgvector:0.8.7-pg16`, `openan/knowledge-opensearch:2.19.6-ik`).
+> - Knowledge base files are stored in the `kbdata` volume when `RKB_STORAGE_BACKEND=local` (default).
+
+### Core Dependency Version Compatibility
+
+**Table 4** knowledge-service v0.2.0 Core Python Dependencies
+
+| Dependency | Version | Purpose |
+|-----|------|------|
+| fastapi | 0.162.0 | REST API framework |
+| uvicorn | 0.54.0 | ASGI server |
+| pydantic | 2.11.10 | Request and response models |
+| psycopg2-binary | 2.9.9 | PostgreSQL driver |
+| requests | 2.34.2 | HTTP client |
+
+> **Note:**
+>
+> - See backend/requirements.txt for the complete dependency list. All direct dependencies are pinned with `==`.
 
 
 # CVE Vulnerabilities
