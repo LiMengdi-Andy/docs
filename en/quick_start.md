@@ -276,6 +276,83 @@ The Java SDK source code and examples are both in the `a2a-t-sdk-java` repositor
 
 ---
 
+## 2.5 Knowledge-service Installation
+
+knowledge-service is deployed independently with Docker Compose. The deployment runs four services: `postgresql` with pgvector, `opensearch`, `backend`, and `web`. The following commands run in the repository root on the deployment host.
+
+### Prerequisites
+
+| Item | Requirement |
+| ---- | ---- |
+| Repository | Checkout containing `backend/`, `frontend/`, and `deploy/docker-compose.yml` |
+| Container runtime | Docker Engine and Docker Compose v2 supporting `up --wait` |
+| Host ports | `8080` (web) and `8091` (backend) available |
+| Kernel setting | `vm.max_map_count` at least `262144` on Linux for OpenSearch |
+| Network | Access to image registries, PyPI, and npm for the first build, or mirror settings in `deploy/.env` |
+
+### Installation Steps
+
+1. Check the deployment environment.
+
+   ```bash
+   docker version
+   docker compose version
+   ```
+
+2. Prepare the environment file and fill in `POSTGRES_PASSWORD`, `RKB_DB_PASSWORD`, and `RKB_SECRET_KEY`.
+
+   ```bash
+   (
+     umask 077
+     cp -n deploy/.env.example deploy/.env
+   )
+   ```
+
+   The three required values can also be generated automatically when the file does not exist.
+
+   ```bash
+   if [ ! -e deploy/.env ]; then
+     (
+       set -euC
+       umask 077
+       studio_pg_password="$(openssl rand -hex 24)"
+       studio_app_password="$(openssl rand -hex 24)"
+       studio_secret_key="$(openssl rand -hex 32)"
+       printf 'POSTGRES_PASSWORD=%s\nRKB_DB_PASSWORD=%s\nRKB_SECRET_KEY=%s\n' \
+         "$studio_pg_password" "$studio_app_password" "$studio_secret_key" > deploy/.env
+     )
+   fi
+   ```
+
+3. Start the services and check them.
+
+   ```bash
+   docker compose --env-file deploy/.env -f deploy/docker-compose.yml config --quiet
+   docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build --wait
+   docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
+
+   curl -fsSL --retry 5 --retry-connrefused -o /dev/null http://localhost:8080/
+   curl -fsS --retry 5 --retry-connrefused http://localhost:8091/api/knowledge-service/v1/health
+   curl -fsS --retry 5 --retry-connrefused http://localhost:8080/api/knowledge-service/v1/health
+   ```
+
+4. Read the initial administrator password on a new database. If `RKB_ADMIN_PASSWORD` is empty, the service generates a random password into a file.
+
+   ```bash
+   docker compose --env-file deploy/.env -f deploy/docker-compose.yml \
+     exec backend cat /data/rkb/initial-admin-password
+   ```
+
+> **Note:**
+>
+> - The default administrator user name is `admin`. If `RKB_ADMIN_PASSWORD` is set in `deploy/.env`, use that value and skip the password file.
+> - Change the password when prompted after the first sign-in; the password file is deleted after the change succeeds.
+> - For an external deployment, point an HTTPS reverse proxy at the web port. The web service forwards same-origin API requests to the backend; disable response buffering for `POST /api/knowledge-service/v1/query` so that SSE answers are delivered incrementally.
+
+For configuration items, troubleshooting, and acceptance steps, see the [Knowledge Service User Guide](https://github.com/project-openan/knowledge-service/blob/main/docs/en/User_Guide.md).
+
+---
+
 # 3 Quick Start
 
 ## 3.1 registry-center and orchestration-center
@@ -429,3 +506,59 @@ Through these capabilities, the Java SDK can help developers reuse A2A-T's task 
 For detailed instructions, see:
 
 - [Java SDK Developer Guide](https://github.com/project-openan/a2a-t-sdk-java/blob/main/docs/en/developer_guide.md)
+
+## 3.3 knowledge-service
+
+knowledge-service provides document and graph knowledge bases, retrieval workflow orchestration, and question answering over the knowledge bases. The web application, Knowledge Studio, exposes five workspaces: Document Knowledge Base, Graph Knowledge Base, Knowledge Retrieval, Chat Test, and Model Management.
+
+After the deployment described in section 2.5 is running, open `http://localhost:8080/#/knowledge`, or the web address of the target server, and sign in with `admin` and the initial password.
+
+### 3.3.1 Register a Model
+
+1. Open `/#/models` and add an Embedding endpoint with the base URL, provider model identifier, vector dimension, and credentials.
+2. Test the connection. Add and test an LLM model to generate answers, and a Reranker model when a retrieval workflow contains a reranking node.
+
+The model endpoints are provided by the deployment and must be reachable from the backend container.
+
+### 3.3.2 Import a Document and Verify Ingestion
+
+1. Open `/#/knowledge` and create a knowledge base with the registered Embedding model.
+2. Import a text-bearing Markdown, TXT, or DOCX file.
+3. Wait until the document status becomes available, then inspect the chunk count and content. If processing fails, choose reprocess from the document menu.
+
+### 3.3.3 Compose and Publish a Retrieval Workflow
+
+1. Open `/#/flow` and create a workflow; bind retrieval nodes to the knowledge base.
+2. Validate the workflow and publish it from the list. Saving a published workflow updates the draft only; republish to make the new configuration effective.
+
+### 3.3.4 Verify with Chat and the Retrieval API
+
+Open `/#/chat`, select the published workflow, ask a question, and inspect the streamed answer, retrieval evidence, and citations.
+
+The retrieval API can be verified without the page. All paths are relative to `/api/knowledge-service/v1`.
+
+```bash
+studio=http://localhost:8080
+api="$studio/api/knowledge-service/v1"
+cookies="$(mktemp)"
+trap 'rm -f "$cookies"' EXIT
+
+curl -fsS -c "$cookies" -H 'Content-Type: application/json' \
+  --data '{"username": "admin", "password": "<password>"}' \
+  "$api/auth/login"
+
+curl -fsS -b "$cookies" "$api/knowledge-bases"
+
+curl -fsS -b "$cookies" -H "Origin: $studio" -H 'Content-Type: application/json' \
+  --data-binary @- "$api/retrieval" <<'JSON'
+{
+  "question": "What is the archive period of the test environment?",
+  "model": "<registered embedding model name>",
+  "type": 0,
+  "bases": [{"baseList": ["doc_<knowledge base ID>"], "priority": 0, "top_k": 3}]
+}
+JSON
+```
+
+`type: 0` is vector retrieval; use `type: 1` for keyword retrieval. The `doc_` prefix is required by document retrieval; the `id` returned by the knowledge base list does not include it.
+
