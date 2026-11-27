@@ -26,3 +26,4 @@ OpenAN documentation is stored in the [OpenAN/docs](https://github.com/project-o
 | Orchestration Center User Guide, Development Guide, API Reference, GCP Containerized Deployment Guide | orchestration-center | [Link](https://github.com/project-openan/orchestration-center/tree/main/docs) |
 | a2a-t-sdk-python User Guide, Development Guide | a2a-t-sdk-python | [Link](https://github.com/project-openan/a2a-t-sdk-python/tree/main/docs) |
 | a2a-t-sdk-java User Guide, Development Guide | a2a-t-sdk-java | [Link](https://github.com/project-openan/a2a-t-sdk-java/tree/main/docs) |
+| Knowledge Service User Guide, Development Guide, API Reference | knowledge-service | [Link](https://github.com/project-openan/knowledge-service/tree/main/docs) |

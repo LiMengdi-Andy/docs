@@ -7,6 +7,7 @@ Welcome to the OpenAN official documentation repository. We invite you to partic
 - Orchestration Center User Guide, Developer Guide, API Reference, GCP Containerized Deployment Guide: https://github.com/project-openan/orchestration-center/tree/main/docs
 - a2a-t-sdk-python User Guide, Developer Guide: https://github.com/project-openan/a2a-t-sdk-python/tree/main/docs
 - a2a-t-sdk-java User Guide, Developer Guide: https://github.com/project-openan/a2a-t-sdk-java/tree/main/docs
+- Knowledge Service User Guide, Developer Guide, API Reference: https://github.com/project-openan/knowledge-service/tree/main/docs
 
 # Contributing
 You can review existing documentation, report documentation issues, and contribute your original content. Here are the ways you can contribute:
